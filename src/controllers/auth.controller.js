@@ -5,12 +5,45 @@ import { v4 as uuidv4 } from "uuid";
 import User from "../models/User.js";
 import {
   sendWelcomeEmail,
-  sendVerificationEmail
+  sendVerificationEmail, sendEmail, sendOtpEmail
 } from "../services/email.service.js";
-import { sendEmail } from "../services/email.service.js";
 
-export const register = async (req, res) => {
+export const registerMobile = async (req, res) => {
   try {
+    const { fullName, email, password } = req.body;
+
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser)
+      return res.status(400).json({ message: "Email already exists" });
+
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    const otp = crypto.randomInt(100000, 999999).toString();
+
+    const user = await User.create({
+      fullName,
+      email,
+      password: hashedPassword,
+      otpCode: otp,
+      otpExpires: Date.now() + 10 * 60 * 1000
+    });
+
+    await sendOtpEmail(user.email, user.fullName, otp);
+
+    res.status(201).json({
+      message: "OTP sent to email"
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+export const registerWeb = async (req, res) => {
+  try {
+
     const { fullName, email, password } = req.body;
 
     const existingUser = await User.findOne({ email });
@@ -26,10 +59,9 @@ export const register = async (req, res) => {
       fullName,
       email,
       password: hashedPassword,
-      emailVerificationToken: verificationToken,
+      emailVerificationToken: verificationToken
     });
 
-    // Send verification email
     await sendVerificationEmail(
       user.email,
       user.fullName,
@@ -37,7 +69,7 @@ export const register = async (req, res) => {
     );
 
     res.status(201).json({
-      message: "User registered. Please verify your email.",
+      message: "Verification email sent"
     });
 
   } catch (error) {
@@ -172,4 +204,31 @@ export const resetPassword = async (req, res) => {
   await user.save();
 
   res.json({ message: "Password reset successful" });
+};
+
+export const verifyOtp = async (req, res) => {
+  const { email, otp } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (!user)
+    return res.status(400).json({ message: "User not found" });
+
+  if (user.otpCode !== otp)
+    return res.status(400).json({ message: "Invalid OTP" });
+
+  if (user.otpExpires < Date.now())
+    return res.status(400).json({ message: "OTP expired" });
+
+ user.isEmailVerified = true;
+user.otpCode = undefined;
+user.otpExpires = undefined;
+
+await user.save();
+
+await sendWelcomeEmail(user.email, user.fullName);
+
+res.json({
+  message: "Email verified successfully"
+});
 };
