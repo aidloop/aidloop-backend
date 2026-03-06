@@ -6,7 +6,7 @@ export default function emailLayout({ title, content }) {
       <tr>
         <td align="center">
           <img 
-            src="https://res.cloudinary.com/dejhvmvqe/image/upload/v1772742533/aidloop_tvccyr.jpg" 
+            src="https://res.cloudinary.com/dejhvmvqe/image/upload/v1772795967/aidloop-removebg-preview_h7n0qt.png" 
             alt="AidLoop"
             style="height:50px;margin-bottom:20px;"
           />
@@ -36,4 +36,5 @@ export default function emailLayout({ title, content }) {
     </table>
   </div>
   `;
+
 }
