@@ -46,6 +46,8 @@ import mongoose from "mongoose";
     type: Number,
     default: 0,
    },
+   passwordResetToken: String,
+passwordResetExpires: Date
 
     },
     {timestamps: true}

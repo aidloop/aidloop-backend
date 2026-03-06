@@ -1,11 +1,10 @@
-
+import emailLayout from "../components/EmailLayout.js";
 
 export default function WelcomeEmail({ name }) {
-  return `
+  const content = `
     <div>
-      <h2>Welcome to AidLoop 🌍</h2>
 
-      <p>Hello {name},</p>
+      <p>Hello ${name},</p>
 
       <p>
         Your email has been successfully verified.
@@ -21,4 +20,8 @@ export default function WelcomeEmail({ name }) {
       <p>— AidLoop Team</p>
     </div>
   `
+   return emailLayout({
+    title: "Welcome to AidLoop 🌍",
+    content
+  });
 }

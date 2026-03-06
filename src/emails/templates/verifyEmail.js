@@ -1,23 +1,27 @@
-export default function VerifyEmail({ name, verifyUrl }) {
-  return `
-    <div>
-      <h2>Verify Your AidLoop Account</h2>
+import emailLayout from "../components/EmailLayout.js";
 
-      <p>Hello ${name},</p>
+export default function VerifyEmail({ fullName, verifyUrl }) {
 
-      <p>
-        Thank you for creating an account on AidLoop.
-        Please confirm your email address to activate your account.
-      </p>
+  const content = `
+    <p>Hello ${fullName},</p>
 
-      <a href="${verifyUrl}" 
-         style="padding:12px 20px;background:#2563eb;color:white;text-decoration:none;">
-         Verify Email
-      </a>
+    <p>
+      Thank you for creating an account on AidLoop.
+      Please confirm your email address to activate your account.
+    </p>
 
-      <p>If you did not create this account, ignore this email.</p>
+    <a href="${verifyUrl}" 
+       style="display:inline-block;padding:12px 20px;background:#2563eb;color:white;text-decoration:none;border-radius:5px;margin-top:10px;">
+       Verify Email
+    </a>
 
-      <p>— AidLoop Team</p>
-    </div>
+    <p style="margin-top:20px;">
+      If you did not create this account, ignore this email.
+    </p>
   `;
+
+  return emailLayout({
+    title: "Verify Your AidLoop Account",
+    content
+  });
 }

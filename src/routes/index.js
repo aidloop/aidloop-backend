@@ -5,10 +5,13 @@ import { authenticate } from "../middleware/auth.middleware.js"
 
 
 
+
+
 const router = express.Router();
 
 router.use("/user", authenticate, userRoutes);
 router.use("/auth", authRoutes);
+
 
 
 
