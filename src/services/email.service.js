@@ -6,6 +6,7 @@ import ApplicationSuccess from "../emails/templates/applicationSuccess.js";
 import EventCreated from "../emails/templates/eventCreated.js";
 import OrganizationApproved from "../emails/templates/organizationApproval.js";
 import OrganizationRejected from "../emails/templates/organizationRejected.js";
+import OtpEmail from "../emails/templates/otpVerification.js";
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -124,5 +125,21 @@ export const sendOrganizationRejectedEmail = async (
     to,
     subject: "Organization verification update",
     html,
+  });
+};
+
+
+
+export const sendOtpEmail = async (to, fullName, otp) => {
+
+  const html = OtpEmail({
+    fullName,
+    otp
+  });
+
+  await sendEmail({
+    to,
+    subject: "Your AidLoop verification code",
+    html
   });
 };
