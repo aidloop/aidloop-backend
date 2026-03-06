@@ -46,6 +46,12 @@ import mongoose from "mongoose";
     type: Number,
     default: 0,
    },
+   otpCode: {
+  type: String
+},
+otpExpires: {
+  type: Date
+},
    passwordResetToken: String,
 passwordResetExpires: Date
 
