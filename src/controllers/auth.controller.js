@@ -1,5 +1,5 @@
 import crypto from "crypto";
-
+import rateLimit from "express-rate-limit";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
 import User from "../models/User.js";
@@ -25,6 +25,7 @@ export const registerMobile = async (req, res) => {
       fullName,
       email,
       password: hashedPassword,
+      role: "volunteer",
       otpCode: otp,
       otpExpires: Date.now() + 10 * 60 * 1000
     });
@@ -59,6 +60,7 @@ export const registerWeb = async (req, res) => {
       fullName,
       email,
       password: hashedPassword,
+      role: "organizer",
       emailVerificationToken: verificationToken
     });
 
@@ -105,6 +107,12 @@ export const login = async (req, res) => {
   }
 };
 
+export const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: "Too many login attempts. Try again later."
+});
+
 export const logout = (req, res) => {
   req.session.destroy(() => {
     res.clearCookie("connect.sid");
@@ -141,7 +149,6 @@ export const verifyEmail = async (req, res) => {
 
     await user.save();
 
-    // Send welcome email AFTER verification
     await sendWelcomeEmail(user.email, user.fullName);
 
     res.json({
@@ -154,34 +161,37 @@ export const verifyEmail = async (req, res) => {
 };
 
 export const forgotPassword = async (req, res) => {
+
   const { email } = req.body;
 
   const user = await User.findOne({ email });
 
-  if (!user) {
-    return res.status(404).json({ message: "User not found" });
-  }
+  if (user) {
 
-  const resetToken = crypto.randomBytes(32).toString("hex");
+    const resetToken = crypto.randomBytes(32).toString("hex");
 
-  user.passwordResetToken = resetToken;
-  user.passwordResetExpires = Date.now() + 3600000;
+    user.passwordResetToken = resetToken;
+    user.passwordResetExpires = Date.now() + 3600000;
 
-  await user.save();
+    await user.save();
 
-  const resetUrl = `${process.env.BACKEND_URL}/reset-password/${resetToken}`;
+    const resetUrl =
+      `${process.env.BACKEND_URL}/reset-password/${resetToken}`;
 
-  await sendEmail({
-    to: email,
-    subject: "Password Reset",
-     html: `
+    await sendEmail({
+      to: email,
+      subject: "Password Reset",
+      html: `
         <h2>Password Reset</h2>
         <p>Click below to reset your password</p>
         <a href="${resetUrl}">Reset Password</a>
-      `,
-  });
+      `
+    });
+  }
 
-  res.json({ message: "Password reset email sent" });
+  res.json({
+    message: "If the email exists, a reset link has been sent"
+  });
 };
 
 export const resetPassword = async (req, res) => {
@@ -206,29 +216,118 @@ export const resetPassword = async (req, res) => {
   res.json({ message: "Password reset successful" });
 };
 
+
 export const verifyOtp = async (req, res) => {
   const { email, otp } = req.body;
 
   const user = await User.findOne({ email });
 
   if (!user)
-    return res.status(400).json({ message: "User not found" });
+    return res.status(400).json({ message: "Invalid verification attempt" });
 
-  if (user.otpCode !== otp)
+  // block after too many attempts
+  if (user.otpAttempts >= 5) {
+    return res.status(429).json({
+      message: "Too many attempts. Request a new OTP."
+    });
+  }
+
+  if (user.otpCode !== otp) {
+    user.otpAttempts += 1;
+    await user.save();
+
     return res.status(400).json({ message: "Invalid OTP" });
+  }
 
-  if (user.otpExpires < Date.now())
+  if (user.otpExpires < Date.now()) {
     return res.status(400).json({ message: "OTP expired" });
+  }
 
- user.isEmailVerified = true;
-user.otpCode = undefined;
-user.otpExpires = undefined;
+  user.isEmailVerified = true;
+  user.otpCode = undefined;
+  user.otpExpires = undefined;
+  user.otpAttempts = 0;
 
-await user.save();
+  await user.save();
 
-await sendWelcomeEmail(user.email, user.fullName);
+  await sendWelcomeEmail(user.email, user.fullName);
 
-res.json({
-  message: "Email verified successfully"
+  res.json({
+    message: "Email verified successfully"
+  });
+};
+
+export const otpLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  max: 3,
+  message: "Too many OTP requests. Try again later."
 });
+
+export const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 50
+});
+
+export const verifyOrganizer = async (req, res) => {
+  try {
+    const { status } = req.body;
+
+    const user = await User.findById(req.params.id);
+
+    if (!user || user.role !== "organizer") {
+      return res.status(404).json({ message: "Organizer not found" });
+    }
+
+    user.verificationStatus = status;
+
+    await user.save();
+
+    res.json({
+      message: `Organizer ${status}`,
+      user
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const resendOtp = async (req, res) => {
+
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (!user)
+    return res.status(404).json({ message: "User not found" });
+
+  const otp = crypto.randomInt(100000, 999999).toString();
+
+  user.otpCode = otp;
+  user.otpExpires = Date.now() + 10 * 60 * 1000;
+
+  await user.save();
+
+  await sendOtpEmail(user.email, user.fullName, otp);
+
+  res.json({ message: "OTP resent" });
+};
+
+export const resendVerificationEmail = async (req,res)=>{
+   const {email} = req.body;
+
+   const user = await User.findOne({email});
+
+   if(!user)
+     return res.status(404).json({message:"User not found"});
+
+   const token = uuidv4();
+
+   user.emailVerificationToken = token;
+
+   await user.save();
+
+   await sendVerificationEmail(user.email,user.fullName,token);
+
+   res.json({message:"Verification email resent"});
 };
