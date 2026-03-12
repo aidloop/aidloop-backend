@@ -36,7 +36,10 @@ import mongoose from "mongoose";
     type: Boolean,
     default: false,
   },
-
+  averageRating: {
+  type: Number,
+  default: 0
+},
   emailVerificationToken: String,
    isActive: {
     type: Boolean,
@@ -51,6 +54,10 @@ import mongoose from "mongoose";
 },
 otpExpires: {
   type: Date
+},
+otpAttempts: {
+  type: Number,
+  default: 0
 },
    passwordResetToken: String,
 passwordResetExpires: Date
