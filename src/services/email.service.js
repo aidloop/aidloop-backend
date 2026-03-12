@@ -7,13 +7,16 @@ import EventCreated from "../emails/templates/eventCreated.js";
 import OrganizationApproved from "../emails/templates/organizationApproval.js";
 import OrganizationRejected from "../emails/templates/organizationRejected.js";
 import OtpEmail from "../emails/templates/otpVerification.js";
+import OrganizerWelcome from "../emails/templates/organizerWelcome.js";
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
+    pass: process.env.EMAIL_PASS
+  }
 });
 
 /* -------------------------------- */
@@ -67,13 +70,13 @@ export const sendWelcomeEmail = async (to, fullName) => {
 export const sendApplicationSuccessEmail = async (
   to,
   fullName,
-  eventTitle,
+  eventName,
   organizationName,
   eventDate
 ) => {
   const html = ApplicationSuccess({
     fullName,
-    eventTitle,
+    eventName,
     organizationName,
     eventDate,
   });
@@ -88,11 +91,11 @@ export const sendApplicationSuccessEmail = async (
 export const sendEventCreatedEmail = async (
   to,
   organizationName,
-  eventTitle
+  eventName
 ) => {
   const html = EventCreated({
     organizationName,
-    eventTitle,
+    eventName,
   });
 
   await sendEmail({
@@ -140,6 +143,19 @@ export const sendOtpEmail = async (to, fullName, otp) => {
   await sendEmail({
     to,
     subject: "Your AidLoop verification code",
+    html
+  });
+};
+
+export const sendOrganizerWelcomeEmail = async (to, fullName) => {
+
+  const html = OrganizerWelcome({
+    fullName
+  });
+
+  await sendEmail({
+    to,
+    subject: "Welcome to AidLoop – Organizer Registration Received",
     html
   });
 };
