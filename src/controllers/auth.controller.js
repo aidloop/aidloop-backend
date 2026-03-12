@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import User from "../models/User.js";
 import {
   sendWelcomeEmail,
-  sendVerificationEmail, sendEmail, sendOtpEmail
+  sendVerificationEmail, sendEmail, sendOtpEmail, sendOrganizerWelcomeEmail
 } from "../services/email.service.js";
 
 export const registerMobile = async (req, res) => {
@@ -149,7 +149,11 @@ export const verifyEmail = async (req, res) => {
 
     await user.save();
 
-    await sendWelcomeEmail(user.email, user.fullName);
+    if (user.role === "organizer") {
+  await sendOrganizerWelcomeEmail(user.email, user.fullName);
+} else {
+  await sendWelcomeEmail(user.email, user.fullName);
+}
 
     res.json({
       message: "Email verified successfully",
