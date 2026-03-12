@@ -1,10 +1,10 @@
 import emailLayout from "../components/EmailLayout.js";
 
-export default function WelcomeEmail({ name }) {
+export default function WelcomeEmail({ fullName }) {
   const content = `
     <div>
 
-      <p>Hello ${name},</p>
+      <p>Hello ${fullName},</p>
 
       <p>
         Your email has been successfully verified.

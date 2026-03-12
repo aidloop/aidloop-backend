@@ -5,7 +5,7 @@ export default function OrganizationRejected({ organizationName }) {
     <div>
       <h2>Your Account Has Been Verified</h2>
 
-      <p>Hello {organizationName},</p>
+      <p>Hello ${organizationName},</p>
 
       <p>
        Your organization verification request was not approved.

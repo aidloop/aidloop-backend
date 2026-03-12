@@ -1,20 +1,20 @@
 
-export default function ApplicationSuccess({ name, eventTitle, OrganizationName, eventDate}) {
+export default function ApplicationSuccess({ fullName, eventName, OrganizationName, eventDate}) {
   return `
     <div>
       <h2>Application Received</h2>
 
-      <p>Hello {name},</p>
+      <p>Hello ${fullName},</p>
 
       <p>
        You have successfully registered for an event on AidLoop
       </p>
 
-      <h3>{eventTitle}</h3>
+      <h3>${eventName}</h3>
 
-      <h4>{OrganizationName}</h4>
+      <h4>${OrganizationName}</h4>
 
-      <p><strong>Date:</strong> {eventDate}</p>
+      <p><strong>Date:</strong> ${eventDate}</p>
 
       <p>
         The organizer will review your application soon.

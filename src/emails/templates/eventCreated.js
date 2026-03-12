@@ -1,14 +1,14 @@
 
-export default function EventCreated({ organizationName, eventTitle }) {
+export default function EventCreated({ organizationName, eventName }) {
   return `
     <div>
       <h2>Event Created Successfully</h2>
 
-      <p>Hello {organizationName},</p>
+      <p>Hello ${organizationName},</p>
 
       <p>Your event:</p>
 
-      <h3>{eventTitle}</h3>
+      <h3>${eventName}</h3>
 
       <p>has been successfully created on AidLoop.</p>
 
