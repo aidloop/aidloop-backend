@@ -1,36 +1,39 @@
-import certificateModel from "../models/certificate.model";
-import Event from "../event"
-import Apllication from "/models/application.models.js"
+import Certificate from "../models/Certificate.js";
+import Registration from "../models/Application.js"
+import { generateCertificate } from "../utils/certificateGenerator.js";
 
-export const generateCertificate = async (userId, eventId) => {
-    const event = await Event.findById(eventId)
-    if (!event || event.status !== "completed") {
-        throw new Error("Event not completed");
-    }
+export const generateCertificateService = async (registrationId) => {
 
-    const application = await application.findOne({
-        user: userId,
-        event: eventId,
-        status: "approved"
-    })
-    if (!application) {
-        throw new Error("Volunteer not approved");
-    }
+  const registration = await Registration
+    .findById(registrationId)
+    .populate("volunteerId")
+    .populate({
+      path: "eventId",
+      populate: {
+        path: "organizationId"
+      }
+    });
 
-    const existing = await Certificate.findOne({
-        user: userId,
-        event: eventId
-    })
-    if (existing) {
-        throw new Error("Certificate already generated");
-    }
+  if (!registration) {
+    throw new Error("Registration not found");
+  }
 
-    const certificateNumber = "CERT-" + Date.now()
+  const certificate = await Certificate.create({
+    volunteerId: registration.volunteerId._id,
+    eventId: registration.eventId._id,
+    registrationId
+  });
 
-    const certificate = await Certificate.create({
-        user: userId,
-        event: eventId,
-        certificateNumber
-    })
-    return certificate
-}
+  const url = await generateCertificate(
+    registration.volunteerId.fullName,
+    registration.eventId.name,
+    registration.eventId.organizationId.fullName,
+    certificate._id
+  );
+
+  certificate.certificateUrl = url;
+
+  await certificate.save();
+
+  return certificate;
+};
