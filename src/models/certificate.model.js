@@ -1,35 +1,39 @@
-import mongoose from "mongoose"
-import User from "../models/User"
-const certificateSchema = new mongoose.schema({
-    certificateNumber: {
-        type: String,
-        unique: true,
-        required: true
-    },
-    
-    User:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-        required: true
-    },
+import mongoose from "mongoose";
 
-    event:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Event",
-        required: true
-    },
+const certificateSchema = new mongoose.Schema(
+{
+  volunteerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true
+  },
 
-    verificationCode: {
-        type: String
-    },
+  eventId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Event",
+    required: true
+  },
 
-    issuedAt: {
-        type: Date ,
-        default: Date.now
-    },
+  registrationId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Registration"
+  },
 
-    pdfUrl: {
-        type: String
-    }
-})
-export default mongoose.model("certificate", certificateSchema)
+  certificateUrl: String,
+
+  issuedAt: {
+    type: Date,
+    default: Date.now
+  }
+},
+{ timestamps: true }
+);
+
+
+
+certificateSchema.index(
+  { eventId: 1, volunteerId: 1 },
+  { unique: true }
+);
+
+export default mongoose.model("Certificate", certificateSchema);
