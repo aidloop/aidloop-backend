@@ -1,7 +1,9 @@
 import express from "express";
-import { createCertificate } from "../controllers/certificate.controller.js";
+import { verifyCertificate, downloadCertificate } from "../controllers/certificate.controller.js";
 
-const router = express.Router()
+const router = express.Router();
 
-router.post("/generate", createCertificate)
-export default router
+router.get("/verify/:id", verifyCertificate);
+router.get("/download/:id", downloadCertificate)
+
+export default router;
