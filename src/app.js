@@ -2,9 +2,10 @@ import express from "express";
 import session from "express-session";
 import MongoStore from "connect-mongo";
 import routes from "./routes/index.js";
+import path from "path"
 
 const app = express();
-
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 app.use(express.json());
 
 app.use(
@@ -19,6 +20,7 @@ app.use(
       httpOnly: true,
       secure: false, // true in production with HTTPS
       maxAge: 1000 * 60 * 60 * 24, // 1 day
+      sameSite: "strict"
     },
   })
 );
