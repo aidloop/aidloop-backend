@@ -90,8 +90,12 @@ export const markAttendanceService = async (registrationId, status) => {
   }
 
   registration.status = status;
-await generateCertificateService(registration._id);
+
   await registration.save();
+
+  if (status === "attended") {
+    await generateCertificateService(registration._id);
+  }
 
   return registration;
 };
