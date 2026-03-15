@@ -16,10 +16,10 @@ const router = express.Router();
 
 router.use("/user", authenticate, userRoutes);
 router.use("/auth", authLimiter, authRoutes);
-router.use("/application", authenticate, applicationRoutes)
+router.use("/applications", authenticate, applicationRoutes)
 router.use("/events", eventRoutes)
 router.use("/certificates", certificateRoutes)
 router.use("/admin", adminRoutes)
-router.use("/", authenticate,ratingRoutes)
+router.use("/", authenticate, ratingRoutes)
 
 export default router;

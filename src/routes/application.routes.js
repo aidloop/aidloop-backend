@@ -21,7 +21,7 @@ router.post(
 
 
 router.delete(
-  "/events/:eventId/register",
+  "/events/:eventId/cancel",
   authorize("volunteer"),
   cancelRegistration
 );

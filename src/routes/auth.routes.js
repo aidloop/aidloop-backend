@@ -22,7 +22,7 @@ router.post("/forget-password", forgotPassword)
 router.post("/reset-password/:token", resetPassword)
 router.post("/resend-otp", otpLimiter ,resendOtp);
 router.post("/resend-email", resendVerificationEmail)
-router.get("/me", authenticate, checkAuthStatus);
+router.get("/status", authenticate, checkAuthStatus);
 router.get("/verify/:token", verifyEmail);
 
 
