@@ -1,8 +1,23 @@
 import "./config/env.js";
 import app from "./app.js";
 import mongoose from "mongoose";
+import helmet from "helmet";
+import cors from "cors";
+import { errorHandler } from "./middleware/error.middleware.js";
 
 const PORT = process.env.PORT || 3000;
+
+app.use(helmet());
+
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true
+  })
+);
+
+
+app.use(errorHandler);
 
 mongoose.connect(process.env.MONGO_URI)
 .then(() => {
