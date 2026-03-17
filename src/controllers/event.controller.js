@@ -85,7 +85,7 @@ export const getEventById = async (req, res) => {
     const { id } = req.params;
 
     const event = await eventService.getEventById(id);
-
+    console.log("Event roles:", event.roles);
     return res.status(200).json({
       success: true,
       data: event,
@@ -110,31 +110,45 @@ export const getEventById = async (req, res) => {
 
 export const listEvents = async (req, res) => {
   try {
-    const { status, category, dateFrom, dateTo, page, limit } = req.query;
-
-    const organizationId =
-      req.query.myEvents === "true" ? req.user?.organizationId : undefined;
-
-    const result = await eventService.listEvents({
+    const {
       status,
       category,
+      city,
+      country,
       dateFrom,
       dateTo,
-      organizationId,
       page,
       limit,
-    });
+      myEvents,
+    } = req.query;
+
+    const filters = {
+      status,
+      category,
+      city,
+      country,
+      dateFrom,
+      dateTo,
+      page,
+      limit,
+    };
+
+    // If organizer wants their own events
+    if (myEvents === "true") {
+      filters.organizationId = req.user._id;
+    }
+
+    const result = await eventService.listEvents(filters);
 
     return res.status(200).json({
       success: true,
-      data: result.events,
-      pagination: result.pagination,
+      ...result,
     });
+
   } catch (error) {
     return handleError(res, error);
   }
 };
-
 // changeEventStatus
 // PATCH /events/:id/status
 // Transition status: draft → published  OR  published → completed.
