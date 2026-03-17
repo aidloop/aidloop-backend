@@ -8,29 +8,38 @@ import {
 
 
 export const registerForEvent = async (req, res) => {
-
   try {
+    
+    const { role } = req.body;
+    const eventId = req.params.eventId;
+    const volunteerId = req.user._id;
 
+    if (!role || typeof role !== "string") {
+      return res.status(400).json({
+        message: "Role is required",
+      });
+    }
+
+   
     const registration = await registerForEventService(
-      req.params.eventId,
-      req.user._id
+      eventId,
+      volunteerId,
+      role
     );
 
     res.status(201).json({
       message: "Successfully registered for event",
-      registration
+      registration,
     });
 
   } catch (error) {
+    console.error("REGISTER ERROR:", error.stack);
 
     res.status(400).json({
-      message: error.message
+      message: error.message || "Registration failed",
     });
-
   }
-
 };
-
 
 export const cancelRegistration = async (req, res) => {
 
