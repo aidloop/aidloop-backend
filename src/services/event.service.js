@@ -90,21 +90,13 @@ export const getEventById = async (eventId) => {
 
   if (!event) throw createError("Event not found.", 404);
 
- 
-  const registeredCount = await Registration.countDocuments({
-    eventId: event._id,
-    status: "registered",
-  });
-
   const eventObj = event.toObject();
 
-  
   eventObj.volunteerProgress = {
-    filled: event.registeredCount,
+    filled: event.registeredCount || 0,
     total: event.volunteerSlots,
   };
 
-  
   let organizationRating = null;
 
   try {
@@ -155,7 +147,7 @@ export const listEvents = async (filters = {}) => {
   if (category) query.category = category;
   if (organizationId) query.organizationId = organizationId;
 
-
+  // Default: only published for public
   if (!status && !organizationId) {
     query.status = "published";
   }
@@ -171,52 +163,31 @@ export const listEvents = async (filters = {}) => {
 
   const skip = (page - 1) * limit;
 
-  const events = await Event.aggregate([
-    { $match: query },
+  const [events, total] = await Promise.all([
+    Event.find(query)
+      .populate(ORG_POPULATE)
+      .sort({ date: 1 })
+      .skip(skip)
+      .limit(Number(limit)),
 
-    {
-      $lookup: {
-        from: "applications", 
-        foreignField: "eventId",
-        as: "registrations",
-      },
-    },
-
-    {
-      $addFields: {
-        registeredCount: {
-          $size: {
-            $filter: {
-              input: "$registrations",
-              as: "reg",
-              cond: { $eq: ["$$reg.status", "registered"] },
-            },
-          },
-        },
-      },
-    },
-
-    {
-      $addFields: {
-       volunteerProgress: {
-  filled: event.registeredCount,
-  total: event.volunteerSlots
-},
-      },
-    },
-
-    { $sort: { date: 1 } },
-    { $skip: skip },
-    { $limit: Number(limit) },
+    Event.countDocuments(query),
   ]);
 
- 
-  const populatedEvents = await Event.populate(events, ORG_POPULATE);
+  // ✅ Attach progress correctly
+  const formattedEvents = events.map((event) => {
+    const eventObj = event.toObject();
 
-  const total = await Event.countDocuments(query);
+    return {
+      ...eventObj,
+      volunteerProgress: {
+        filled: event.registeredCount || 0,
+        total: event.volunteerSlots,
+      },
+    };
+  });
 
   return {
-    events: populatedEvents,
+    events: formattedEvents,
     pagination: {
       total,
       page: Number(page),
