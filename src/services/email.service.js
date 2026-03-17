@@ -1,5 +1,4 @@
-import nodemailer from "nodemailer";
-
+import { Resend } from "resend";
 import VerifyEmail from "../emails/templates/verifyEmail.js";
 import WelcomeEmail from "../emails/templates/welcomeEmail.js";
 import ApplicationSuccess from "../emails/templates/applicationSuccess.js";
@@ -9,16 +8,9 @@ import OrganizationRejected from "../emails/templates/organizationRejected.js";
 import OtpEmail from "../emails/templates/otpVerification.js";
 import OrganizerWelcome from "../emails/templates/organizerWelcome.js";
 
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  },
-  connectionTimeout: 10000
-});
+
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 /* -------------------------------- */
 /* GENERIC EMAIL SENDER */
@@ -26,19 +18,18 @@ const transporter = nodemailer.createTransport({
 
 export const sendEmail = async ({ to, subject, html }) => {
   try {
-    const info = await transporter.sendMail({
-      from: `"AidLoop" <${process.env.EMAIL_USER}>`,
+    const response = await resend.emails.send({
+      from: `AidLoop <${process.env.EMAIL_FROM}>`,
       to,
       subject,
       html,
     });
 
-    console.log("Email sent:", info.messageId);
+    console.log("Email sent:", response);
   } catch (error) {
     console.error("Email send error:", error);
   }
 };
-
 /* -------------------------------- */
 /* EMAIL FUNCTIONS */
 /* -------------------------------- */
