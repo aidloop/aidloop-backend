@@ -142,7 +142,11 @@ const eventSchema = new mongoose.Schema(
       type: locationSchema,
       required: true,
     },
-
+    image: {
+  type: String,
+  default: null
+},
+registeredCount: { type: Number, default: 0 },
     // Calendar date of the event
     date: {
       type: Date,
@@ -190,7 +194,7 @@ const eventSchema = new mongoose.Schema(
       enum: EVENT_STATUSES,
       default: "draft",
     },
-
+  
     // Populated only when the event is cancelled
     cancellation: {
       type: cancellationSchema,

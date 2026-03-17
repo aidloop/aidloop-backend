@@ -24,6 +24,10 @@ const registrationSchema = new mongoose.Schema(
     ],
     default: "registered"
   },
+  role: {
+  type: String,
+  required: true
+},
 
   registeredAt: {
     type: Date,
