@@ -1,5 +1,6 @@
 import Event from "../models/Event.js";
 import User from "../models/User.js";
+import Registration from "../models/Application.js"
 import { sendEventCreatedEmail } from "./email.service.js";
 
 const ALLOWED_TRANSITIONS = {
@@ -89,13 +90,27 @@ export const getEventById = async (eventId) => {
 
   if (!event) throw createError("Event not found.", 404);
 
+ 
+  const registeredCount = await Registration.countDocuments({
+    eventId: event._id,
+    status: "registered",
+  });
+
+  const eventObj = event.toObject();
+
+  
+  eventObj.volunteerProgress = {
+    filled: event.registeredCount,
+    total: event.volunteerSlots,
+  };
+
+  
   let organizationRating = null;
 
   try {
     const { default: Rating } = await import("../rating/rating.model.js");
 
     const [ratingData] = await Rating.aggregate([
-      // Only count ratings from events belonging to this organisation
       { $match: { organizerId: event.organizationId._id } },
       {
         $group: {
@@ -108,16 +123,15 @@ export const getEventById = async (eventId) => {
 
     if (ratingData) {
       organizationRating = {
-        average: parseFloat(ratingData.avg.toFixed(1)), // e.g. 4.9
-        count: ratingData.count, // e.g. 23 ratings
+        average: parseFloat(ratingData.avg.toFixed(1)),
+        count: ratingData.count,
       };
     }
   } catch {
     organizationRating = null;
   }
 
-  const eventObj = event.toObject();
-  eventObj.organizationRating = organizationRating;
+  eventObj.averageRating = organizationRating;
 
   return eventObj;
 };
@@ -140,9 +154,11 @@ export const listEvents = async (filters = {}) => {
   if (status) query.status = status;
   if (category) query.category = category;
   if (organizationId) query.organizationId = organizationId;
+
+
   if (!status && !organizationId) {
-  query.status = "published";
-}
+    query.status = "published";
+  }
 
   if (city) query["location.city"] = city;
   if (country) query["location.country"] = country;
@@ -155,17 +171,52 @@ export const listEvents = async (filters = {}) => {
 
   const skip = (page - 1) * limit;
 
-  const [events, total] = await Promise.all([
-    Event.find(query)
-      .populate(ORG_POPULATE)
-      .sort({ date: 1 })
-      .skip(skip)
-      .limit(Number(limit)),
-    Event.countDocuments(query),
+  const events = await Event.aggregate([
+    { $match: query },
+
+    {
+      $lookup: {
+        from: "applications", 
+        foreignField: "eventId",
+        as: "registrations",
+      },
+    },
+
+    {
+      $addFields: {
+        registeredCount: {
+          $size: {
+            $filter: {
+              input: "$registrations",
+              as: "reg",
+              cond: { $eq: ["$$reg.status", "registered"] },
+            },
+          },
+        },
+      },
+    },
+
+    {
+      $addFields: {
+       volunteerProgress: {
+  filled: event.registeredCount,
+  total: event.volunteerSlots
+},
+      },
+    },
+
+    { $sort: { date: 1 } },
+    { $skip: skip },
+    { $limit: Number(limit) },
   ]);
 
+ 
+  const populatedEvents = await Event.populate(events, ORG_POPULATE);
+
+  const total = await Event.countDocuments(query);
+
   return {
-    events,
+    events: populatedEvents,
     pagination: {
       total,
       page: Number(page),

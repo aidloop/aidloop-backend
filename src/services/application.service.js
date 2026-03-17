@@ -4,36 +4,62 @@ import User from "../models/User.js";
 import { sendApplicationSuccessEmail } from "./email.service.js";
 import { generateCertificateService } from "../services/certificate.service.js";
 
-export const registerForEventService = async (eventId, volunteerId) => {
+export const registerForEventService = async (eventId, volunteerId, role) => {
 
- const event = await Event.findById(eventId);
+const event = await Event.findById(eventId);
 
 if (!event) {
   throw new Error("Event not found");
 }
 
-if (event.status !== "published") {
-  throw new Error("Event is not open for registration");
+if (!role || typeof role !== "string") {
+  throw new Error("Role is required");
 }
 
+const normalizedRole = role.trim().toLowerCase();
+
+const validRoles = (event.roles || [])
+  .filter(r => typeof r === "string" && r.trim() !== "")
+  .map(r => r.trim().toLowerCase());
+
+if (!validRoles.includes(normalizedRole)) {
+  console.log("DEBUG roles:", event.roles);
+  console.log("DEBUG normalized:", normalizedRole);
+  console.log("DEBUG validRoles:", validRoles);
+
+  throw new Error("Invalid role selected");
+}
   const existingRegistration = await Registration.findOne({
     eventId,
-    volunteerId
+    volunteerId,
+    
   });
 
   if (existingRegistration) {
     throw new Error("Already registered for this event");
   }
 
-  if (event.capacity && event.registeredCount >= event.capacity) {
-    throw new Error("Event is full");
-  }
+  const count = await Registration.countDocuments({
+  eventId,
+  status: "registered"
+});
+
+if (count >= event.volunteerSlots) {
+  throw new Error("Event is full");
+}
 const volunteer = await User.findById(volunteerId);
 const organizer = await User.findById(event.organizationId);
-  const registration = await Registration.create({
-    eventId,
-    volunteerId
-  });
+const registration = await Registration.create({
+  eventId,
+  volunteerId,
+  role,
+  status: "registered"
+});
+
+
+await Event.findByIdAndUpdate(eventId, {
+  $inc: { registeredCount: 1 }
+});
 
    await sendApplicationSuccessEmail(
     volunteer.email,
@@ -60,9 +86,13 @@ export const cancelRegistrationService = async (eventId, volunteerId) => {
   }
 
   registration.status = "cancelled";
+await registration.save();
 
-  await registration.save();
-
+if (registration.status === "registered") {
+  await Event.findByIdAndUpdate(eventId, {
+    $inc: { registeredCount: -1 }
+  });
+}
   return registration;
 };
 

@@ -8,6 +8,7 @@ import eventRoutes from "./event.routes.js"
 import certificateRoutes from "./certificate.routes.js"
 import adminRoutes from "./admin.routes.js"
 import ratingRoutes from "./rating.routes.js"
+import uploadRoutes from "./upload.routes.js"
 
 
 
@@ -21,5 +22,6 @@ router.use("/events", eventRoutes)
 router.use("/certificates", certificateRoutes)
 router.use("/admin", adminRoutes)
 router.use("/", authenticate, ratingRoutes)
+router.use("/upload", authenticate, uploadRoutes)
 
 export default router;
