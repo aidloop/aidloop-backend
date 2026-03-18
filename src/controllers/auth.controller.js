@@ -258,15 +258,14 @@ export const resetPasswordOtp = async (req, res) => {
   if (user.resetOtpExpires < Date.now()) {
     return res.status(400).json({ message: "OTP expired" });
   }
-  if (user.resetOtpExpires > Date.now() - 60 * 1000) {
-  return res.status(400).json({ message: "Wait before requesting again" });
-}
+ 
   if (user.resetOtpAttempts >= 5) {
     return res.status(429).json({
       message: "Too many attempts. Request a new OTP."
     });
   }
-
+  console.log("DB OTP:", user.resetOtp);
+console.log("INPUT OTP:", otp);
   if (user.resetOtp !== otp) {
     user.resetOtpAttempts += 1;
     await user.save();
