@@ -198,6 +198,32 @@ export const forgotPassword = async (req, res) => {
   });
 };
 
+export const forgotPasswordOtp = async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    return res.json({
+      message: "If the email exists, an OTP has been sent"
+    });
+  }
+
+  const otp = crypto.randomInt(100000, 999999).toString();
+
+  user.resetOtp = otp;
+  user.resetOtpExpires = Date.now() + 10 * 60 * 1000;
+  user.resetOtpAttempts = 0;
+
+  await user.save();
+
+  await sendOtpEmail(user.email, user.fullName, otp);
+
+  res.json({
+    message: "OTP sent to email"
+  });
+};
+
 export const resetPassword = async (req, res) => {
   const { token } = req.params;
   const { password } = req.body;
@@ -220,6 +246,46 @@ export const resetPassword = async (req, res) => {
   res.json({ message: "Password reset successful" });
 };
 
+export const resetPasswordOtp = async (req, res) => {
+  const { email, otp, password } = req.body;
+
+  const user = await User.findOne({ email }).select("+password");
+
+  if (!user) {
+    return res.status(400).json({ message: "Invalid request" });
+  }
+
+  if (user.resetOtpExpires < Date.now()) {
+    return res.status(400).json({ message: "OTP expired" });
+  }
+  if (user.resetOtpExpires > Date.now() - 60 * 1000) {
+  return res.status(400).json({ message: "Wait before requesting again" });
+}
+  if (user.resetOtpAttempts >= 5) {
+    return res.status(429).json({
+      message: "Too many attempts. Request a new OTP."
+    });
+  }
+
+  if (user.resetOtp !== otp) {
+    user.resetOtpAttempts += 1;
+    await user.save();
+
+    return res.status(400).json({ message: "Invalid OTP" });
+  }
+
+  user.password = await bcrypt.hash(password, 12);
+
+  user.resetOtp = undefined;
+  user.resetOtpExpires = undefined;
+  user.resetOtpAttempts = 0;
+
+  await user.save();
+
+  res.json({
+    message: "Password reset successful"
+  });
+};
 
 export const verifyOtp = async (req, res) => {
   const { email, otp } = req.body;
