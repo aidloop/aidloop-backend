@@ -60,7 +60,11 @@ otpAttempts: {
   default: 0
 },
    passwordResetToken: String,
-passwordResetExpires: Date
+passwordResetExpires: Date,
+
+resetOtp: String,
+resetOtpExpires: Date,
+resetOtpAttempts: { type: Number, default: 0 },
 
     },
     {timestamps: true}
