@@ -216,7 +216,7 @@ export const forgotPasswordOtp = async (req, res) => {
   user.resetOtpAttempts = 0;
 
   await user.save();
-
+console.log("Saved OTP:", user.resetOtp);
   await sendOtpEmail(user.email, user.fullName, otp);
 
   res.json({
