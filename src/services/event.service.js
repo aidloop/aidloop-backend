@@ -30,7 +30,10 @@ export const createEvent = async (organizationId, eventData) => {
   if (new Date(eventData.date) < new Date()) {
   throw createError("Event date must be in the future.", 400);
 }
-if (eventData.endTime <= eventData.startTime) {
+const start = new Date(`${eventData.date} ${eventData.startTime}`);
+const end = new Date(`${eventData.date} ${eventData.endTime}`);
+
+if (end <= start) {
   throw createError("End time must be after start time.", 400);
 }
 const organizer = await User.findById(organizationId);
