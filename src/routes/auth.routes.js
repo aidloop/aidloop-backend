@@ -6,7 +6,8 @@ import {
   logout,
   checkAuthStatus,
   verifyEmail, resetPassword, forgotPassword,
-  verifyOtp, resendOtp, resendVerificationEmail, otpLimiter, loginLimiter
+  verifyOtp, resendOtp, resendVerificationEmail, otpLimiter, loginLimiter,
+  forgotPasswordOtp, resetPasswordOtp
 } from "../controllers/auth.controller.js";
 
 import { authenticate } from "../middleware/auth.middleware.js";
@@ -22,8 +23,11 @@ router.post("/forget-password", forgotPassword)
 router.post("/reset-password/:token", resetPassword)
 router.post("/resend-otp", otpLimiter ,resendOtp);
 router.post("/resend-email", resendVerificationEmail)
+router.post("/forgot-password-otp", forgotPasswordOtp);
+router.post("/reset-password-otp", resetPasswordOtp);
 router.get("/status", authenticate, checkAuthStatus);
 router.get("/verify/:token", verifyEmail);
+
 
 
 export default router;
