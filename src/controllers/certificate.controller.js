@@ -21,7 +21,6 @@ export const verifyCertificate = async (req, res) => {
 };
 
 export const downloadCertificate = async (req, res) => {
-
   const certificate = await Certificate.findById(req.params.id);
 
   if (!certificate) {
@@ -30,5 +29,5 @@ export const downloadCertificate = async (req, res) => {
     });
   }
 
-  res.download(certificate.certificateUrl);
+  return res.redirect(certificate.certificateUrl);
 };
