@@ -201,7 +201,8 @@ doc.fontSize(10)
 
     const upload = await cloudinary.uploader.upload(tempFile, {
       folder: "aidloop-certificates",
-      resource_type: "raw"
+      resource_type: "raw",
+       type: "upload"
     });
 
     return upload.secure_url;
