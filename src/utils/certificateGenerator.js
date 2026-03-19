@@ -44,7 +44,7 @@ export const generateCertificate = async (
     doc.save().fillOpacity(0.95).rect(630, 30, 170, 90).fillAndStroke("#FFF", "#E5E5E5").restore();
 
     /* ================= LOGOS ================= */
-    doc.image(aidloopLogo, 60, 40, { fit: [140, 70] });
+    doc.image(aidloopLogo, 50, 35, { fit: [160, 80] }); // bigger
 
     if (organizerLogo) {
       const logoTemp = path.join(process.cwd(), `temp-logo-${certificateId}.png`);
@@ -60,87 +60,70 @@ export const generateCertificate = async (
 
       organizerLogoPath = logoTemp;
 
-      doc.image(organizerLogoPath, 645, 40, { fit: [120, 70] });
-
-    } else {
-      doc.font("bodyFont").fontSize(12).text(organizerName, 640, 60, {
-        width: 140,
-        align: "center"
-      });
+      doc.image(organizerLogoPath, 635, 35, { fit: [150, 80] }); 
     }
 
     /* ================= LABELS ================= */
     doc.font("bodyFont").fontSize(10).fillColor("#666")
        .text("Powered by AidLoop", 60, 115);
 
-doc.text("Organized by", 650, 115, {
-  width: 120,
-  align: "center"
-});
+    doc.text("Organized by", 650, 115, {
+      width: 120,
+      align: "center"
+    });
 
-   doc.moveTo(40, 135)
-   .lineTo(800, 135)
-   .stroke("#EAEAEA");
+    doc.moveTo(40, 135)
+       .lineTo(800, 135)
+       .stroke("#EAEAEA");
 
-    /* ================= TITLE ================= */
-    doc.font("titleFont")
-   .fontSize(34)
-   .fillColor("#1A1A1A")
-   .text("CERTIFICATE OF APPRECIATION", 0, 170, {
-     width: 842,
-     align: "center",
-     characterSpacing: 2
-   });
+   
 
     /* ================= NAME ================= */
-   doc.moveDown(0.5);
-
-doc.font("titleFont")
-   .fontSize(48)
-   .fillColor("#C9A227")
-   .text(volunteerName, 0, 260, {
-     width: 842,
-     align: "center",
-     characterSpacing: 3
-   });
+    doc.font("titleFont")
+       .fontSize(48)
+       .fillColor("#C9A227")
+       .text(volunteerName, 0, 260, {
+         width: 842,
+         align: "center",
+         characterSpacing: 3
+       });
 
     /* ================= DESCRIPTION ================= */
-    doc.moveDown(1);
+    doc.font("bodyFont")
+       .fontSize(18)
+       .fillColor("#444")
+       .text(
+         `In recognition of your outstanding volunteer service during`,
+         0,
+         340,
+         { width: 842, align: "center" }
+       );
 
-doc.font("bodyFont")
-   .fontSize(18)
-   .fillColor("#444")
-   .text(
-     `In recognition of your outstanding volunteer service during`,
-     0,
-     340,
-     { width: 842, align: "center" }
-   );
+    doc.moveDown(0.3);
 
-doc.moveDown(0.3);
+    doc.font("bodyFont")
+       .fontSize(20)
+       .fillColor("#000")
+       .text(`"${eventTitle}"`, {
+         align: "center"
+       });
 
-doc.font("bodyFont")
-   .fontSize(20)
-   .fillColor("#000")
-   .text(`"${eventTitle}"`, {
-     align: "center"
-   });
+    doc.moveDown(0.3);
 
-doc.moveDown(0.3);
+    doc.font("bodyFont")
+       .fontSize(16)
+       .fillColor("#555")
+       .text(`organized by ${organizerName}`, {
+         align: "center"
+       });
 
-doc.font("bodyFont")
-   .fontSize(16)
-   .fillColor("#555")
-   .text(`organized by ${organizerName}`, {
-     align: "center"
-   });
-    /* ================= GOLD SEAL ================= */
+    /* ================= GOLD SEAL (CENTER FIXED) ================= */
     doc.save();
-    doc.opacity(0.18);
-    doc.image(seal, 360, 300, { width: 140 });
+    doc.opacity(0.2);
+    doc.image(seal, 355, 385, { width: 120 }); 
     doc.restore();
 
-    /* ================= SIGNATURE ================= */
+    /* ================= SIGNATURE (FIXED) ================= */
     if (organizerSignature) {
       const sigTemp = path.join(process.cwd(), `temp-sign-${certificateId}.png`);
 
@@ -155,40 +138,21 @@ doc.font("bodyFont")
 
       signaturePath = sigTemp;
 
-      doc.image(signaturePath, 520, 400, { width: 120 });
-
-      // Organizer name
-doc.font("bodyFont")
-   .fontSize(12)
-   .fillColor("#000")
-   .text(organizerName, 500, 450, {
-     width: 150,
-     align: "center"
-   });
-
-        // Signature line
-doc.moveTo(500, 440)
-   .lineTo(650, 440)
-   .stroke("#999");
+      // ONLY signature image (no extra text/line)
+      doc.image(signaturePath, 520, 410, { width: 120 });
     }
-// Label
-doc.fontSize(10)
-   .fillColor("#777")
-   .text("Authorized Signature", 500, 465, {
-     width: 150,
-     align: "center"
-   });
+
     /* ================= DATE ================= */
     const date = new Date().toLocaleDateString("en-US", {
-  year: "numeric",
-  month: "long",
-  day: "numeric"
-});
+      year: "numeric",
+      month: "long",
+      day: "numeric"
+    });
 
     doc.font("bodyFont")
-      .fontSize(16)
-      .fillColor("#444")
-      .text(date, 160, 450);
+       .fontSize(16)
+       .fillColor("#444")
+       .text(date, 160, 450);
 
     /* ================= QR ================= */
     const verifyUrl = `${process.env.FRONTEND_URL}/verify-certificate/${certificateId}`;
@@ -199,12 +163,11 @@ doc.fontSize(10)
     doc.end();
     await new Promise(r => stream.on("finish", r));
 
-   const upload = await cloudinary.uploader.upload(tempFile, {
-  folder: "aidloop-certificates",
-  resource_type: "raw",
-  type: "upload",
-  access_mode: "public" 
-});
+    const upload = await cloudinary.uploader.upload(tempFile, {
+      folder: "aidloop-certificates",
+      resource_type: "raw",
+      type: "upload"
+    });
 
     return upload.secure_url;
 
@@ -214,7 +177,3 @@ doc.fontSize(10)
     });
   }
 };
-
-
-
-
