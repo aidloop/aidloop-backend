@@ -199,11 +199,12 @@ doc.fontSize(10)
     doc.end();
     await new Promise(r => stream.on("finish", r));
 
-    const upload = await cloudinary.uploader.upload(tempFile, {
-      folder: "aidloop-certificates",
-      resource_type: "raw",
-       type: "upload"
-    });
+   const upload = await cloudinary.uploader.upload(tempFile, {
+  folder: "aidloop-certificates",
+  resource_type: "raw",
+  type: "upload",
+  access_mode: "public" 
+});
 
     return upload.secure_url;
 
