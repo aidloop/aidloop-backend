@@ -32,7 +32,7 @@ export const generateCertificate = async (
     /* ================= ASSETS ================= */
     const template = path.join(process.cwd(), "src/assets/certificate-template.jpg");
     const aidloopLogo = path.join(process.cwd(), "src/assets/aidloop.png");
-    const seal = path.join(process.cwd(), "src/assets/gold-seal.jpeg");
+    // const seal = path.join(process.cwd(), "src/assets/gold-seal.jpeg");
 
     doc.registerFont("titleFont", path.join(process.cwd(), "src/assets/fonts/PlayfairDisplay-Bold.ttf"));
     doc.registerFont("bodyFont", path.join(process.cwd(), "src/assets/fonts/OpenSans-VariableFont.ttf"));
@@ -109,10 +109,10 @@ export const generateCertificate = async (
       );
 
     /* ================= GOLD SEAL ================= */
-    doc.save();
-    doc.opacity(0.25);
-    doc.image(seal, 360, 360, { width: 120 });
-    doc.restore();
+    // doc.save();
+    // doc.opacity(0.25);
+    // doc.image(seal, 360, 360, { width: 120 });
+    // doc.restore();
 
     /* ================= SIGNATURE ================= */
     if (organizerSignature) {
