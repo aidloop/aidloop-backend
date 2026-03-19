@@ -9,6 +9,7 @@ export const updateUserProfileService = async (userId, updateData) => {
   const allowedFields = [
     "fullName",
     "phoneNumber",
+    "signatureImage"
     "profileImage",
     "skills",
     "interests",
