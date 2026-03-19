@@ -1,9 +1,8 @@
-
+import emailLayout from "../components/EmailLayout.js";
 export default function EventCreated({ organizationName, eventName }) {
-  return `
+  const content = `
     <div>
-      <h2>Event Created Successfully</h2>
-
+      
       <p>Hello ${organizationName},</p>
 
       <p>Your event:</p>
@@ -23,4 +22,8 @@ export default function EventCreated({ organizationName, eventName }) {
       <p>— AidLoop Team</p>
     </div>
   `;
+   return emailLayout({
+    title: "Event Created Successfully",
+    content
+  });
 }

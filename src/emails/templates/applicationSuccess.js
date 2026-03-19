@@ -1,9 +1,8 @@
-
-export default function ApplicationSuccess({ fullName, eventName, OrganizationName, eventDate}) {
-  return `
+import emailLayout from "../components/EmailLayout.js";
+export default function ApplicationSuccess({ fullName, eventName, organizationName, eventDate}) {
+  const content= `
     <div>
-      <h2>Application Received</h2>
-
+      
       <p>Hello ${fullName},</p>
 
       <p>
@@ -12,7 +11,7 @@ export default function ApplicationSuccess({ fullName, eventName, OrganizationNa
 
       <h3>${eventName}</h3>
 
-      <h4>${OrganizationName}</h4>
+      <h4>${organizationName}</h4>
 
       <p><strong>Date:</strong> ${eventDate}</p>
 
@@ -25,4 +24,8 @@ export default function ApplicationSuccess({ fullName, eventName, OrganizationNa
       <p>— AidLoop Team</p>
     </div>
    `;
+    return emailLayout({
+       title: "Application Received",
+       content
+     });
 }

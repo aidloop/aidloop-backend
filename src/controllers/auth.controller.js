@@ -216,7 +216,7 @@ export const forgotPasswordOtp = async (req, res) => {
   user.resetOtpAttempts = 0;
 
   await user.save();
-
+console.log("Saved OTP:", user.resetOtp);
   await sendOtpEmail(user.email, user.fullName, otp);
 
   res.json({
@@ -264,7 +264,8 @@ export const resetPasswordOtp = async (req, res) => {
       message: "Too many attempts. Request a new OTP."
     });
   }
- 
+  console.log("DB OTP:", user.resetOtp);
+console.log("INPUT OTP:", otp);
   if (user.resetOtp !== otp) {
     user.resetOtpAttempts += 1;
     await user.save();

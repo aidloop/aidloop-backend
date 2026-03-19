@@ -15,9 +15,9 @@ export const approveOrganizer = async (req, res) => {
   user.verificationStatus = "approved";
 
   await sendOrganizationApprovedEmail(
-    user.fullName,
-    user.email
-  )
+  user.email,
+  user.fullName
+);
 
   await user.save();
 
@@ -42,10 +42,10 @@ export const rejectOrganizer = async (req, res) => {
   
 
   await sendOrganizationRejectedEmail(
-    user.fullName,
-    user.email
+      user.email,
+      user.fullName
   )
-
+  
   await user.save();
 
   res.json({

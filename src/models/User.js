@@ -19,6 +19,7 @@ import mongoose from "mongoose";
    },
    phoneNumber: String,
    profileImage: String,
+   signatureImage: String, 
    skills: [String],
    interests:[String],
    bio: String,

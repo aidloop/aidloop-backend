@@ -1,8 +1,7 @@
-
+import emailLayout from "../components/EmailLayout.js";
 export default function OrganizationApproved({ organizationName }) {
-  return `
+  const content= `
     <div>
-      <h2>Your Account Has Been Verified</h2>
 
       <p>Hello ${organizationName},</p>
 
@@ -17,4 +16,8 @@ export default function OrganizationApproved({ organizationName }) {
       <p>— AidLoop Team</p>
     </div>
   `;
+   return emailLayout({
+    title: "Your Account Has Been Verified",
+    content
+  });
 }

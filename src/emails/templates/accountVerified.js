@@ -1,11 +1,10 @@
-
+import emailLayout from "../components/EmailLayout";
 
 export default function AccountVerified({ name }) {
-  return `
+  const content= `
     <div>
-      <h2>Your Account Has Been Verified</h2>
 
-      <p>Hello {name},</p>
+      <p>Hello ${name},</p>
 
       <p>
         Congratulations! Your account has been verified by the AidLoop team.
@@ -16,4 +15,8 @@ export default function AccountVerified({ name }) {
       <p>— AidLoop Team</p>
     </div>
   `;
+   return emailLayout({
+    title: "Your Account Has Been Verified",
+    content
+  });
 }
