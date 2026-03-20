@@ -2,7 +2,8 @@ import Registration from "../models/Application.js";
 import Event from "../models/Event.js";
 import User from "../models/User.js";
 import { sendApplicationSuccessEmail } from "./email.service.js";
-import { generateCertificateService } from "../services/certificate.service.js";
+import { createNotification } from "./notification.service.js";
+import { generateCertificateService } from "./certificate.service.js";
 
 export const registerForEventService = async (eventId, volunteerId, role) => {
 
@@ -23,9 +24,6 @@ const validRoles = (event.roles || [])
   .map(r => r.trim().toLowerCase());
 
 if (!validRoles.includes(normalizedRole)) {
-  console.log("DEBUG roles:", event.roles);
-  console.log("DEBUG normalized:", normalizedRole);
-  console.log("DEBUG validRoles:", validRoles);
 
   throw new Error("Invalid role selected");
 }
@@ -49,6 +47,8 @@ if (count >= event.volunteerSlots) {
 }
 const volunteer = await User.findById(volunteerId);
 const organizer = await User.findById(event.organizationId);
+
+
 const registration = await Registration.create({
   eventId,
   volunteerId,
@@ -59,6 +59,14 @@ const registration = await Registration.create({
 
 await Event.findByIdAndUpdate(eventId, {
   $inc: { registeredCount: 1 }
+});
+
+await createNotification({
+  userId: volunteer._id,
+  title: "Registration Confirmed",
+  message: `You registered for ${event.name}`,
+  type: "registration",
+  data: { eventId: event._id }
 });
 
    await sendApplicationSuccessEmail(
