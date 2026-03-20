@@ -1,7 +1,9 @@
 import Event from "../models/Event.js";
 import User from "../models/User.js";
 import Registration from "../models/Application.js"
+import Notification from "../models/Notification.js";
 import { sendEventCreatedEmail } from "./email.service.js";
+
 
 const ALLOWED_TRANSITIONS = {
   draft: ["published"],
@@ -66,6 +68,21 @@ export const updateEvent = async (eventId, organizationId, updates) => {
 
   Object.assign(event, safeUpdates);
   await event.save();
+
+const registrations = await Registration.find({
+  eventId: event._id,
+  status: "registered"
+}).populate("volunteerId");
+
+const notifications = registrations.map(reg => ({
+  userId: reg.volunteerId._id,
+  title: "Event Updated",
+  message: `${event.name} has been updated`,
+  type: "event_update",
+  data: { eventId: event._id }
+}));
+
+await Notification.insertMany(notifications);
   return event;
 };
 
@@ -251,5 +268,20 @@ export const cancelEvent = async (
   };
 
   await event.save();
+
+  const registrations = await Registration.find({
+  eventId: event._id,
+  status: "registered"
+}).populate("volunteerId");
+
+const notifications = registrations.map(reg => ({
+  userId: reg.volunteerId._id,
+  title: "Event Updated",
+  message: `${event.name} has been cancelled`,
+  type: "event_update",
+  data: { eventId: event._id }
+}));
+
+await Notification.insertMany(notifications);
   return event;
 };

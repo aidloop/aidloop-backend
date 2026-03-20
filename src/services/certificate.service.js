@@ -46,12 +46,15 @@ export const generateCertificateService = async (registrationId) => {
 
   await certificate.save();
 
-  const notification = await createNotification({
+   await createNotification({
   userId: registration.volunteerId._id,
   title: "Certificate Ready",
   message: `Your certificate for ${registration.eventId.name} is ready`,
   type: "certificate",
-  data: { certificateId: certificate._id }
+  data: {
+    certificateId: certificate._id,
+    eventName: registration.eventId.name
+  }
 });
 
   return certificate;

@@ -1,82 +1,69 @@
-import Registration from "../models/Application.js";
 import Event from "../models/Event.js";
+import Registration from "../models/Application.js";
 import User from "../models/User.js";
-import { sendApplicationSuccessEmail } from "./email.service.js";
 import { createNotification } from "./notification.service.js";
-import { generateCertificateService } from "./certificate.service.js";
+import { sendApplicationSuccessEmail } from "./email.service.js"; 
 
 export const registerForEventService = async (eventId, volunteerId, role) => {
+ 
+  const event = await Event.findById(eventId);
+  if (!event) throw new Error("Event not found");
 
-const event = await Event.findById(eventId);
 
-if (!event) {
-  throw new Error("Event not found");
-}
+  if (!role || typeof role !== "string") throw new Error("Role is required");
 
-if (!role || typeof role !== "string") {
-  throw new Error("Role is required");
-}
+  const normalizedRole = role.trim().toLowerCase();
+  const validRoles = (event.roles || [])
+    .filter(r => typeof r === "string" && r.trim() !== "")
+    .map(r => r.trim().toLowerCase());
 
-const normalizedRole = role.trim().toLowerCase();
+  if (!validRoles.includes(normalizedRole)) throw new Error("Invalid role selected");
 
-const validRoles = (event.roles || [])
-  .filter(r => typeof r === "string" && r.trim() !== "")
-  .map(r => r.trim().toLowerCase());
-
-if (!validRoles.includes(normalizedRole)) {
-
-  throw new Error("Invalid role selected");
-}
-  const existingRegistration = await Registration.findOne({
+  
+  let registration = await Registration.findOne({
     eventId,
     volunteerId,
-    
+    status: "registered"
   });
+  if (registration) throw new Error("Already registered for this event");
 
-  if (existingRegistration) {
-    throw new Error("Already registered for this event");
+  const volunteer = await User.findById(volunteerId);
+  const organizer = await User.findById(event.organizationId);
+
+  registration = await Registration.findOne({ eventId, volunteerId, status: "cancelled" });
+  if (registration) {
+    registration.status = "registered";
+    registration.role = role;
+    await registration.save();
+  } else {
+   
+    registration = await Registration.create({
+      eventId,
+      volunteerId,
+      role,
+      status: "registered"
+    });
   }
 
-  const count = await Registration.countDocuments({
-  eventId,
-  status: "registered"
-});
+  
+  await Event.findByIdAndUpdate(eventId, { $inc: { registeredCount: 1 } });
 
-if (count >= event.volunteerSlots) {
-  throw new Error("Event is full");
-}
-const volunteer = await User.findById(volunteerId);
-const organizer = await User.findById(event.organizationId);
+ 
+  await createNotification({
+    userId: volunteer._id,
+    title: "Registration Confirmed",
+    message: `You registered for ${event.name}`,
+    type: "registration",
+    data: { eventId: event._id }
+  });
 
-
-const registration = await Registration.create({
-  eventId,
-  volunteerId,
-  role,
-  status: "registered"
-});
-
-
-await Event.findByIdAndUpdate(eventId, {
-  $inc: { registeredCount: 1 }
-});
-
-await createNotification({
-  userId: volunteer._id,
-  title: "Registration Confirmed",
-  message: `You registered for ${event.name}`,
-  type: "registration",
-  data: { eventId: event._id }
-});
-
-   await sendApplicationSuccessEmail(
+  await sendApplicationSuccessEmail(
     volunteer.email,
     volunteer.fullName,
     event.name,
-    organizer.fullName,   // organization name
+    organizer.fullName,
     event.date
   );
-
 
   return registration;
 };
@@ -84,27 +71,34 @@ await createNotification({
 
 export const cancelRegistrationService = async (eventId, volunteerId) => {
 
-  const registration = await Registration.findOne({
-    eventId,
-    volunteerId
-  });
+  const registration = await Registration.findOne({ eventId, volunteerId });
+  if (!registration) throw new Error("Registration not found");
 
-  if (!registration) {
-    throw new Error("Registration not found");
+
+  const wasRegistered = registration.status === "registered";
+  registration.status = "cancelled";
+  await registration.save();
+
+  if (wasRegistered) {
+    await Event.findByIdAndUpdate(eventId, { $inc: { registeredCount: -1 } });
   }
 
-  registration.status = "cancelled";
-await registration.save();
+  
+  const volunteer = await User.findById(volunteerId);
+  const event = await Event.findById(eventId);
 
-if (registration.status === "registered") {
-  await Event.findByIdAndUpdate(eventId, {
-    $inc: { registeredCount: -1 }
-  });
-}
+  if (volunteer && event) {
+    await createNotification({
+      userId: volunteer._id,
+      title: "Registration Cancelled",
+      message: `You have successfully cancelled your registration for ${event.name}`,
+      type: "registration",
+      data: { eventId: event._id }
+    });
+  }
+
   return registration;
 };
-
-
 export const getVolunteerRegistrationsService = async (volunteerId) => {
 
   return Registration.find({ volunteerId })
