@@ -7,6 +7,10 @@ import OrganizationApproved from "../emails/templates/organizationApproval.js";
 import OrganizationRejected from "../emails/templates/organizationRejected.js";
 import OtpEmail from "../emails/templates/otpVerification.js";
 import OrganizerWelcome from "../emails/templates/organizerWelcome.js";
+import WarningEmail from "../emails/templates/warningEmail.js";
+import FlaggedOrganizerEmail from "../emails/templates/flaggedOrganizerEmail.js";
+import EventCancellationVolunteerEmail from "../emails/templates/eventCancellationVolunteerEmail.js";
+
 
 
 
@@ -149,5 +153,35 @@ export const sendOrganizerWelcomeEmail = async (to, fullName) => {
     to,
     subject: "Welcome to AidLoop – Organizer Registration Received",
     html
+  });
+};
+
+export const sendWarningEmail = async (to, organizationName, issues) => {
+  const html = WarningEmail({ organizationName, issues });
+
+  await sendEmail({
+    to,
+    subject: "Notice Regarding Your Activity on AidLoop",
+    html,
+  });
+};
+
+export const sendFlaggedOrganizerEmail = async (to, organizationName, issues) => {
+  const html = FlaggedOrganizerEmail({ organizationName, issues });
+
+  await sendEmail({
+    to,
+    subject: "Important Notice Regarding Your AidLoop Account",
+    html,
+  });
+};
+
+export const sendEventCancellationVolunteerEmail = async (to, volunteerName, eventName, organizationName, eventDate, reason) => {
+  const html = EventCancellationVolunteerEmail({ volunteerName, eventName, organizationName, eventDate, reason });
+
+  await sendEmail({
+    to,
+    subject: `Event Cancellation Notice – ${eventName}`,
+    html,
   });
 };

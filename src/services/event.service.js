@@ -83,6 +83,14 @@ const notifications = registrations.map(reg => ({
 }));
 
 await Notification.insertMany(notifications);
+
+for (const reg of registrations) {
+  await sendEventCreatedEmail(
+    reg.volunteerId.email,
+    reg.volunteerId.fullName,
+    `${event.name} has been updated`
+  );
+}
   return event;
 };
 
@@ -268,12 +276,41 @@ export const cancelEvent = async (
   };
 
   await event.save();
+  
 
   const registrations = await Registration.find({
   eventId: event._id,
   status: "registered"
 }).populate("volunteerId");
 
+// Send email to each volunteer
+for (const reg of registrations) {
+  await sendEventCancellationVolunteerEmail(
+    reg.volunteerId.email,
+    reg.volunteerId.fullName,
+    event.name,
+    event.organizationId.fullName,
+    event.date,
+    reason === "Other" ? note : reason
+  );
+}
+
+// Optional: send flagged/warning email to organizer if frequent cancellations
+const organizer = await User.findById(organizationId);
+const recentCancellations = await Event.countDocuments({
+  organizationId,
+  status: "cancelled",
+  date: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } // last 30 days
+});
+
+if (recentCancellations >= 3) {
+  
+  await sendWarningEmail(
+    organizer.email,
+    organizer.fullName,
+    ["Frequent event cancellations in the last 30 days"]
+  );
+}
 const notifications = registrations.map(reg => ({
   userId: reg.volunteerId._id,
   title: "Event Updated",
