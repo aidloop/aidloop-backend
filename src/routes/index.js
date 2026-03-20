@@ -20,10 +20,10 @@ router.use("/user", authenticate, userRoutes);
 router.use("/auth", authLimiter, authRoutes);
 router.use("/applications", authenticate, applicationRoutes);
 router.use("/events", eventRoutes);
-router.use("/certificates", certificateRoutes);
+router.use("/certificates", authenticate, certificateRoutes);
 router.use("/admin", adminRoutes);
 router.use("/", authenticate, ratingRoutes);
 router.use("/upload", authenticate, uploadRoutes);
-router.use("/notifications", notificationRoutes);
+router.use("/notifications", authenticate, notificationRoutes);
 
 export default router;
