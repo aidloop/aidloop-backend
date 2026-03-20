@@ -29,5 +29,43 @@ export const downloadCertificate = async (req, res) => {
     });
   }
 
+  
+  if (certificate.volunteerId.toString() !== req.user.id) {
+    return res.status(403).json({
+      message: "Unauthorized"
+    });
+  }
+
   return res.redirect(certificate.certificateUrl);
+};
+export const getCertificateById = async (req, res) => {
+  const certificate = await Certificate.findById(req.params.id);
+
+  if (!certificate) {
+    return res.status(404).json({
+      message: "Certificate not found"
+    });
+  }
+
+  
+  if (certificate.volunteerId.toString() !== req.user.id) {
+    return res.status(403).json({
+      message: "Unauthorized"
+    });
+  }
+  res.json(certificate);
+};
+
+export const getMyCertificates = async (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({
+      message: "Unauthorized"
+    });
+  }
+
+  const certificates = await Certificate
+    .find({ volunteerId: req.user.id })
+    .sort({ createdAt: -1 });
+
+  res.json(certificates);
 };
