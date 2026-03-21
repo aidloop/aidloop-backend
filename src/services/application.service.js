@@ -2,7 +2,8 @@ import Event from "../models/Event.js";
 import Registration from "../models/Application.js";
 import User from "../models/User.js";
 import { createNotification } from "./notification.service.js";
-import { sendApplicationSuccessEmail } from "./email.service.js"; 
+import { sendApplicationSuccessEmail } from "./email.service.js";
+import {generateCertificateService} from "./certificate.service.js"
 
 export const registerForEventService = async (eventId, volunteerId, role) => {
  
