@@ -107,6 +107,40 @@ export const login = async (req, res) => {
   }
 };
 
+export const webLogin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email }).select("+password");
+
+    if (!user)
+      return res.status(400).json({ message: "Invalid credentials" });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch)
+      return res.status(400).json({ message: "Invalid credentials" });
+
+    if (!user.isEmailVerified)
+      return res.status(403).json({ message: "Verify your email first" });
+
+    req.session.userId = user._id;
+
+    res.status(200).json({
+      message: "Login successful",
+      user: {
+        id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role
+      }
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
