@@ -7,7 +7,7 @@ import {
   checkAuthStatus,
   verifyEmail, resetPassword, forgotPassword,
   verifyOtp, resendOtp, resendVerificationEmail, otpLimiter, loginLimiter,
-  forgotPasswordOtp, resetPasswordOtp
+  forgotPasswordOtp, resetPasswordOtp, webLogin
 } from "../controllers/auth.controller.js";
 
 import { authenticate } from "../middleware/auth.middleware.js";
@@ -27,6 +27,7 @@ router.post("/forgot-password-otp", forgotPasswordOtp);
 router.post("/reset-password-otp", resetPasswordOtp);
 router.get("/status", authenticate, checkAuthStatus);
 router.get("/verify/:token", verifyEmail);
+router.get("/webLogin", loginLimiter, webLogin)
 
 
 
