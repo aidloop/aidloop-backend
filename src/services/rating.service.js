@@ -9,6 +9,16 @@ export const submitRatingService = async (
   review
 ) => {
 
+
+  const existingRating = await Rating.findOne({
+    volunteerId,
+    eventId
+  });
+
+  if (existingRating) {
+    throw new Error("You have already rated this event");
+  }
+
   const newRating = await Rating.create({
     volunteerId,
     organizerId,
@@ -17,14 +27,24 @@ export const submitRatingService = async (
     review
   });
 
-  // calculate organizer average rating
-  const ratings = await Rating.find({ organizerId });
+  // Recalculate organizer average rating
+  const stats = await Rating.aggregate([
+    { $match: { organizerId } },
+    {
+      $group: {
+        _id: "$organizerId",
+        averageRating: { $avg: "$rating" },
+        count: { $sum: 1 }
+      }
+    }
+  ]);
 
-  const average =
-    ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length;
+  const average = stats[0]?.averageRating || 0;
+  const count = stats[0]?.count || 0;
 
   await User.findByIdAndUpdate(organizerId, {
-    averageRating: average
+    averageRating: Number(average.toFixed(1)),
+    ratingCount: count
   });
 
   return newRating;
