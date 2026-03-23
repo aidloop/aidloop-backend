@@ -12,23 +12,21 @@ app.use(helmet());
 app.use(
   cors({
     origin: process.env.FRONTEND_URL,
-    credentials: true
+    credentials: true,
   })
 );
 
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => {
+    console.log("mongo connected");
 
-app.use(errorHandler);
-
-mongoose.connect(process.env.MONGO_URI)
-.then(() => {
-
-  console.log("mongo connected");
-
-  app.listen(PORT, () => {
-    console.log(`server running on port ${PORT}`);
+    app.listen(PORT, () => {
+      console.log(`server running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("MongoDB connection error:", err);
   });
 
-})
-.catch((err) => {
-  console.error("MongoDB connection error:", err);
-});
+app.use(errorHandler);
