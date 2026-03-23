@@ -168,7 +168,6 @@ export const checkAuthStatus = async (req, res) => {
 
 export const verifyEmail = async (req, res) => {
   try {
-
     const { token } = req.params;
 
     const user = await User.findOne({
@@ -176,7 +175,7 @@ export const verifyEmail = async (req, res) => {
     });
 
     if (!user)
-      return res.status(400).json({ message: "Invalid token" });
+      return res.status(400).send("Invalid token");
 
     user.isEmailVerified = true;
     user.emailVerificationToken = undefined;
@@ -184,17 +183,16 @@ export const verifyEmail = async (req, res) => {
     await user.save();
 
     if (user.role === "organizer") {
-  await sendOrganizerWelcomeEmail(user.email, user.fullName);
-} else {
-  await sendWelcomeEmail(user.email, user.fullName);
-}
+      await sendOrganizerWelcomeEmail(user.email, user.fullName);
+    } else {
+      await sendWelcomeEmail(user.email, user.fullName);
+    }
 
-    res.json({
-      message: "Email verified successfully",
-    });
+    // Redirect to login page after verification
+    res.redirect(`${process.env.FRONTEND_URL}/Organizer/login/organizer-login.html?verified=true`);
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).send("Verification failed");
   }
 };
 
