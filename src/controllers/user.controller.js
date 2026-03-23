@@ -1,3 +1,5 @@
+import User from "../models/User.js";
+import cloudinary from "../config/cloudinary.js";
 import { getUserProfileService,
     updateUserProfileService,
     getAllUsersService,
@@ -40,3 +42,30 @@ import { getUserProfileService,
         res.status(500).json({message:error.message});
     }
  };
+
+ export const uploadProfileImage = async (req, res) => {
+  try {
+    const file = req.file;
+
+    if (!file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const base64 = file.buffer.toString("base64");
+    const dataURI = `data:${file.mimetype};base64,${base64}`;
+
+    const result = await cloudinary.uploader.upload(dataURI, {
+      folder: "aidloop/profile-images",
+    });
+
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { profileImage: result.secure_url },
+      { new: true }
+    );
+
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
