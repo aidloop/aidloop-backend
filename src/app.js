@@ -37,15 +37,14 @@ app.use(
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl: process.env.MONGO_URI,
-    }),
-    cookie: {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      maxAge: 1000 * 60 * 60 * 24,
-    },
+ // app.js session
+store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),
+cookie: {
+  httpOnly: true,
+  secure: true,           // always true in production
+  sameSite: "none",       // cross-origin
+  maxAge: 1000 * 60 * 60 * 24
+}
   })
 );
 
