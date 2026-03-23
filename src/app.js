@@ -33,5 +33,8 @@ app.use(
 );
 
 app.use("/api", routes);
+app.get("/api/health", (req, res) => {
+  res.json({ status: "OK" });
+});
 
 export default app;
