@@ -20,7 +20,7 @@ const createError = (message, statusCode) => {
 
 const ORG_POPULATE = {
   path: "organizationId",
-  select: "fullName email verificationStatus"
+  select: "fullName email verificationStatus averageRating ratingCount"
 };
 
 export const createEvent = async (organizationId, eventData) => {
@@ -117,41 +117,19 @@ export const getEventById = async (eventId) => {
 
   const eventObj = event.toObject();
 
+  eventObj.organizerRating = {
+    average: event.organizationId?.averageRating || 0,
+    count: event.organizationId?.ratingCount || 0
+  };
+
   eventObj.volunteerProgress = {
     filled: event.registeredCount || 0,
     total: event.volunteerSlots,
   };
 
-  let organizationRating = null;
-
-  try {
-    const { default: Rating } = await import("../rating/rating.model.js");
-
-    const [ratingData] = await Rating.aggregate([
-      { $match: { organizerId: event.organizationId._id } },
-      {
-        $group: {
-          _id: null,
-          avg: { $avg: "$score" },
-          count: { $sum: 1 },
-        },
-      },
-    ]);
-
-    if (ratingData) {
-      organizationRating = {
-        average: parseFloat(ratingData.avg.toFixed(1)),
-        count: ratingData.count,
-      };
-    }
-  } catch {
-    organizationRating = null;
-  }
-
-  eventObj.averageRating = organizationRating;
-
   return eventObj;
 };
+
 
 export const listEvents = async (filters = {}) => {
   const {
@@ -200,16 +178,20 @@ export const listEvents = async (filters = {}) => {
 
   // ✅ Attach progress correctly
   const formattedEvents = events.map((event) => {
-    const eventObj = event.toObject();
+  const eventObj = event.toObject();
 
-    return {
-      ...eventObj,
-      volunteerProgress: {
-        filled: event.registeredCount || 0,
-        total: event.volunteerSlots,
-      },
-    };
-  });
+  return {
+    ...eventObj,
+    organizerRating: {
+      average: event.organizationId?.averageRating || 0,
+      count: event.organizationId?.ratingCount || 0
+    },
+    volunteerProgress: {
+      filled: event.registeredCount || 0,
+      total: event.volunteerSlots,
+    },
+  };
+});
 
   return {
     events: formattedEvents,
