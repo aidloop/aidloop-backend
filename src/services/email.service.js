@@ -39,7 +39,7 @@ export const sendEmail = async ({ to, subject, html }) => {
 /* -------------------------------- */
 
 export const sendVerificationEmail = async (to, fullName, token) => {
-  const verifyUrl = `${process.env.BACKEND_URL}/api/auth/verify/${token}`;
+  const verifyUrl = `${process.env.FRONTEND_URL}/api/auth/verify/${token}`;
 
   const html = VerifyEmail({
     fullName,
