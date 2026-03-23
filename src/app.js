@@ -11,11 +11,6 @@ app.set("trust proxy", 1);
 app.use(express.json());
 
 app.use(
-  "/uploads",
-  express.static(path.join(process.cwd(), "uploads"))
-);
-
-app.use(
   session({
     secret: process.env.SESSION_SECRET,
     resave: false,
@@ -26,10 +21,15 @@ app.use(
     cookie: {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 1000 * 60 * 60 * 24,
-      sameSite: "strict",
     },
   })
+);
+
+app.use(
+  "/uploads",
+  express.static(path.join(process.cwd(), "uploads"))
 );
 
 app.use("/api", routes);
