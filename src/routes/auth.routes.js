@@ -25,7 +25,7 @@ router.post("/resend-otp", otpLimiter ,resendOtp);
 router.post("/resend-email", resendVerificationEmail)
 router.post("/forgot-password-otp", forgotPasswordOtp);
 router.post("/reset-password-otp", resetPasswordOtp);
-router.get("/status", authenticate, checkAuthStatus);
+router.get("/status", checkAuthStatus);
 router.get("/verify/:token", verifyEmail);
 router.get("/webLogin", loginLimiter, webLogin)
 
