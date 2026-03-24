@@ -10,9 +10,11 @@ const app = express();
 
 app.set("trust proxy", 1);
 
-
-app.use(helmet());
-
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false,
+  })
+);
 
 app.use(
   cors({
@@ -27,27 +29,21 @@ app.use(
 app.use(express.json());
 
 app.use(
-  "/uploads",
-  express.static(path.join(process.cwd(), "uploads"))
-);
-
-
-app.use(
   session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
- // app.js session
-store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),
-cookie: {
-  httpOnly: true,
-  secure: true,           // always true in production
-  sameSite: "none",       // cross-origin
-  maxAge: 1000 * 60 * 60 * 24
-}
+    store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),
+    cookie: {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      maxAge: 1000 * 60 * 60 * 24
+    }
   })
 );
 
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 app.use("/api", routes);
 
