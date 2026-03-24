@@ -128,7 +128,6 @@ export const webLogin = async (req, res) => {
 
     res.status(200).json({
       message: "Login successful",
-      token,
       user: {
         id: user._id,
         fullName: user.fullName,
