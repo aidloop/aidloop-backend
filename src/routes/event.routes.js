@@ -9,6 +9,7 @@ import {
   listEvents,
   changeEventStatus,
   cancelEvent,
+  getMyEvents
 } from "../controllers/event.controller.js";
 
 import {authenticate} from "../middleware/auth.middleware.js";
@@ -28,6 +29,8 @@ router.get("/", authenticate, listEvents);
 
 // GET /events/:id
 // Retrieve full details for a single event.
+
+router.get("/my-events",authenticate, authorize("organizer"), getMyEvents);
 
 router.get("/:id", authenticate, getEventById);
 
