@@ -1,6 +1,7 @@
 // event.controller.js
 // HTTP layer only – reads req, calls the service, writes res.
 
+import Event from "../models/Event.js";
 import * as eventService from "../services/event.service.js";
 
 // handleError
@@ -212,6 +213,7 @@ export const cancelEvent = async (req, res) => {
   }
 };
 
+
 export const getMyEvents = async (req, res) => {
   try {
     const events = await Event.find({
@@ -222,7 +224,9 @@ export const getMyEvents = async (req, res) => {
       success: true,
       events
     });
+
   } catch (error) {
+    console.error(error);
     res.status(500).json({
       success: false,
       message: error.message
