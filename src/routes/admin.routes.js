@@ -3,33 +3,36 @@ import express from "express";
 import {
   approveOrganizer,
   rejectOrganizer,
-  deactivateUser
+  deactivateUser,
+  getPendingOrganizers, getAdminStats, getAllOrganizers, getOrganizerById
 } from "../controllers/admin.controller.js";
 
-import { authenticate } from "../middleware/auth.middleware.js";
-import { authorize } from "../middleware/rbac.middleware.js";
 
 const router = express.Router();
 
 router.patch(
   "/organizers/:id/approve",
-  authenticate,
-  authorize("admin"),
   approveOrganizer
 );
 
 router.patch(
   "/organizers/:id/reject",
-  authenticate,
-  authorize("admin"),
   rejectOrganizer
 );
 
 router.patch(
   "/users/:id/deactivate",
-  authenticate,
-  authorize("admin"),
   deactivateUser
 );
+
+router.get(
+  "/organizers/pending",
+  getPendingOrganizers
+);
+
+router.get("/stats", getAdminStats);
+router.get("/organizers", getAllOrganizers);
+router.get("/organizers/:id", getOrganizerById);
+
 
 export default router;
