@@ -211,3 +211,21 @@ export const cancelEvent = async (req, res) => {
     return handleError(res, error);
   }
 };
+
+export const getMyEvents = async (req, res) => {
+  try {
+    const events = await Event.find({
+      organizationId: req.user._id
+    }).sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      events
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
