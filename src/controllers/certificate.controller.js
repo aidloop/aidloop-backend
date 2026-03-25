@@ -93,8 +93,16 @@ export const getMyCertificates = async (req, res) => {
 export const getAllCertificates = async (req, res) => {
   const certificates = await Certificate
     .find()
-    .populate("volunteerId", "fullName")
-    .populate("eventId", "name");
+    .populate("volunteerId", "fullName phoneNumber")
+    .populate({
+      path: "eventId",
+      select: "name date organizer",
+      populate: {
+        path: "organizer",
+        select: "organizationName fullName"
+      }
+    })
+    .sort({ createdAt: -1 });
 
   res.json(certificates);
 };
