@@ -87,22 +87,21 @@ export const getMyRegistrations = async (req, res) => {
 
 
 export const getEventRegistrations = async (req, res) => {
-
   try {
-
     const registrations =
       await getEventRegistrationsService(req.params.eventId);
 
-    res.json(registrations);
-
-  } catch (error) {
-
-    res.status(500).json({
-      message: error.message
+    res.json({
+      success: true,
+      data: registrations
     });
 
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
-
 };
 
 
