@@ -4,8 +4,15 @@ export const verifyCertificate = async (req, res) => {
   try {
     const certificate = await Certificate
       .findById(req.params.id)
-      .populate("volunteerId", "fullName phoneNumber email")
-      .populate("eventId", "name date");
+      .populate("volunteerId", "fullName phoneNumber")
+      .populate({
+        path: "eventId",
+        select: "name date organizationId",
+        populate: {
+          path: "organizationId",
+          select: "fullName"
+        }
+      });
 
     if (!certificate) {
       return res.status(404).json({
@@ -17,6 +24,7 @@ export const verifyCertificate = async (req, res) => {
       volunteerName: certificate.volunteerId?.fullName,
       phoneNumber: certificate.volunteerId?.phoneNumber,
       eventName: certificate.eventId?.name,
+      organizerName: certificate.eventId?.organizationId?.fullName,
       eventDate: certificate.eventId?.date,
       issuedAt: certificate.issuedAt,
       status: "issued"
@@ -107,7 +115,14 @@ export const getAllCertificates = async (req, res) => {
     const certificates = await Certificate
       .find()
       .populate("volunteerId", "fullName phoneNumber")
-      .populate("eventId", "name date")
+      .populate({
+        path: "eventId",
+        select: "name date organizationId",
+        populate: {
+          path: "organizationId",
+          select: "fullName"
+        }
+      })
       .sort({ createdAt: -1 });
 
     const formatted = certificates.map(cert => ({
@@ -115,6 +130,7 @@ export const getAllCertificates = async (req, res) => {
       volunteerName: cert.volunteerId?.fullName,
       phoneNumber: cert.volunteerId?.phoneNumber,
       eventName: cert.eventId?.name,
+      organizerName: cert.eventId?.organizationId?.fullName,
       eventDate: cert.eventId?.date,
       issuedAt: cert.issuedAt,
       status: "issued"
