@@ -1,6 +1,6 @@
 import express from "express";
 import { verifyCertificate, downloadCertificate,
-    getMyCertificates,getCertificateById
+    getMyCertificates,getCertificateById, getAllCertificates
  } from "../controllers/certificate.controller.js";
  
 
@@ -10,5 +10,6 @@ router.get("/verify/:id", verifyCertificate);
 router.get("/download/:id", downloadCertificate)
 router.get("/my-certificates", getMyCertificates);
 router.get("/:id", getCertificateById);
+router.get("/", getAllCertificates);
 
 export default router;
