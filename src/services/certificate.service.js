@@ -59,3 +59,25 @@ export const generateCertificateService = async (registrationId) => {
 
   return certificate;
 };
+
+export const getPendingCertificatesService = async (eventId) => {
+
+  const registrations = await Registration.find({
+    eventId,
+    status: "attended"
+  })
+  .populate("volunteerId", "fullName email profileImage")
+  .populate("eventId", "title startDate");
+
+  const certificates = await Certificate.find({ eventId });
+
+  const issuedVolunteerIds = new Set(
+    certificates.map(c => String(c.userId))
+  );
+
+  const pending = registrations.filter(r =>
+    !issuedVolunteerIds.has(String(r.volunteerId._id))
+  );
+
+  return pending;
+};
