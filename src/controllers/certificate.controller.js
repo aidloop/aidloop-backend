@@ -143,3 +143,25 @@ export const getAllCertificates = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+export const getPendingCertificates = async (req, res) => {
+  try {
+
+    const { eventId } = req.params;
+
+    const pending =
+      await getPendingCertificatesService(eventId);
+
+    res.json({
+      success: true,
+      data: pending
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
+};
