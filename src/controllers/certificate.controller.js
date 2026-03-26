@@ -1,4 +1,5 @@
 import Certificate from "../models/Certificate.js";
+import Event from "../models/Event.js";
 
 export const verifyCertificate = async (req, res) => {
   try {
