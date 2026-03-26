@@ -23,7 +23,8 @@ app.use(
       "http://localhost:5500",
       "https://aidloop-frontendweb-self.vercel.app",
        "https://aidloop.vercel.app",
-       "https://aidloop.netlify.app"
+       "https://aidloop.netlify.app",
+      "https://aidloopfrontd.vercel.app"
     ],
     credentials: true
   })
