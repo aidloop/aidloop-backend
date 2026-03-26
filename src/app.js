@@ -21,7 +21,9 @@ app.use(
     origin: [
       "http://127.0.0.1:5500",
       "http://localhost:5500",
-      "https://aidloop-frontendweb-self.vercel.app"
+      "https://aidloop-frontendweb-self.vercel.app",
+       "https://aidloop.vercel.app",
+       "https://aidloop.netlify.app"
     ],
     credentials: true
   })
