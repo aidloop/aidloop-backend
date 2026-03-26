@@ -163,5 +163,28 @@ export const getPendingCertificates = async (req, res) => {
       message: error.message
     });
 
+    export const getCertificatesByEvent = async (req, res) => {
+  try {
+
+    const certificates = await Certificate.find({
+      eventId: req.params.eventId
+    })
+    .populate("volunteerId", "fullName email profileImage")
+    .populate("eventId", "name date");
+
+    res.json({
+      success: true,
+      data: certificates
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
+};
+
   }
 };
