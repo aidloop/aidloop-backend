@@ -1,5 +1,5 @@
 import Certificate from "../models/Certificate.js";
-import Event from "../models/Event.js";
+
 
 export const verifyCertificate = async (req, res) => {
   try {
@@ -163,8 +163,9 @@ export const getPendingCertificates = async (req, res) => {
     res.status(500).json({
       message: error.message
     });
-
-    export const getCertificatesByEvent = async (req, res) => {
+  }
+};
+  export const getCertificatesByEvent = async (req, res) => {
   try {
 
     const certificates = await Certificate.find({
@@ -183,9 +184,6 @@ export const getPendingCertificates = async (req, res) => {
     res.status(500).json({
       message: error.message
     });
-
-  }
-};
 
   }
 };
