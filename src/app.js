@@ -24,7 +24,7 @@ app.use(
       "https://aidloop-frontendweb-self.vercel.app",
        "https://aidloop.vercel.app",
        "https://aidloop.netlify.app",
-      "https://aidloopfrontd.vercel.app"
+      "https://aidloop-fedweb.vercel.app"
     ],
     credentials: true
   })
