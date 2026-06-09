@@ -22,7 +22,7 @@ app.use(
       "http://127.0.0.1:5500",
       "http://localhost:5500",
       "https://aidloop-frontendweb-self.vercel.app",
-       "https://aidloop.vercel.app",
+       "https://aidloop-fedweb.vercel.app",
        "https://aidloop.netlify.app",
       "https://aidloopfweb.vercel.app"
     ],
