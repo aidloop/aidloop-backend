@@ -1,6 +1,6 @@
 import User from "../models/User.js";
 import cloudinary from "../config/cloudinary.js";
-import { getUserProfileService,
+import { getMyProfileService,
     updateUserProfileService,
     getAllUsersService,
     changeUserRoleService
@@ -8,7 +8,7 @@ import { getUserProfileService,
 
  export const getMyProfile = async(req, res)=>{
      try{
-        const user = await getUserProfileService(req.user._id);
+        const user = await getMyProfileService(req.user._id);
         res.status(200).json(user);
      }catch (error){
         res.status(500).json({message:error.message});
