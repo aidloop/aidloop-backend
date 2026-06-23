@@ -1,7 +1,40 @@
-import User from '../models/User.js'
+import Registration from "../models/Application.js";
+import Certificate from "../models/Certificate.js";
+import User from "../models/User.js";
 
-export const getUserProfileService = async(userId) => {
-    return await User.findById(userId);
+export const getMyProfileService = async (userId) => {
+  const user = await User.findById(userId);
+
+  const completedRegistrations = await Registration.find({
+    volunteerId: userId,
+    status: "attended"
+  }).populate("eventId");
+
+  const upcomingRegistrations = await Registration.find({
+    volunteerId: userId,
+    status: "registered"
+  }).populate("eventId");
+
+  const certificates = await Certificate.countDocuments({
+    volunteerId: userId
+  });
+  const pendingApplications = await Registration.countDocuments({
+    volunteerId: userId,
+    status: "pending"
+  });
+
+  return {
+    user,
+    stats: {
+      completedEvents: completedRegistrations.length,
+      upcomingEvents: upcomingRegistrations.length,
+      volunteerHours: user.totalVolunteerHours,
+      pendingApplications,
+      certificates
+    },
+    completedEvents: completedRegistrations.map(r => r.eventId),
+    upcomingEvents: upcomingRegistrations.map(r => r.eventId)
+  };
 };
 
 export const updateUserProfileService = async (userId, updateData) => {
